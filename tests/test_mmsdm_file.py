@@ -52,10 +52,10 @@ from nemdata import mmsdm
         ),
         (
             2025,
-            6,
+            5,
             "TRADINGPRICE",
             "trading-price",
-            "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2025/MMSDM_2025_06/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_ARCHIVE%23TRADINGPRICE%23FILE01%23202506010000.zip",
+            "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2025/MMSDM_2025_05/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_ARCHIVE%23TRADINGPRICE%23FILE01%23202505010000.zip",
         ),
     ],
 )
