@@ -7,7 +7,7 @@ from nemdata.downloader import download
 
 def test_system_mmsdm(base_dir: pathlib.Path, capsys: CaptureFixture) -> None:
     tables = [
-        {"table": "trading-price", "months": ["2020-01", "2020-02"], "repeat": "2020-02"},
+        {"table": "trading-price", "months": ["2020-01", "2020-02", "2025-01"], "repeat": "2025-01"},
         {"table": "predispatch", "months": ["2024-01", "2025-01"], "repeat": "2025-01"},
     ]
     for config in tables:
