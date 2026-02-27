@@ -150,15 +150,17 @@ def make_one_mmsdm_file(
     year: int, month: int, table: MMSDMTable, base_directory: pathlib.Path
 ) -> MMSDMFile:
     """creates a single MMSDMFile object that represents one file on the AEMO MMSDM website"""
-    #  zero pad the month - 3 -> 03
     padded_month = str(month).zfill(2)
 
-    #  url to the zipfile on MMSDM website
     url_prefix = f"https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{year}/MMSDM_{year}_{padded_month}/MMSDM_Historical_Data_SQLLoader"
-    url = f"{url_prefix}/{table.directory}/PUBLIC_DVD_{table.table}_{year}{padded_month}010000.zip"
 
-    #  name of the CSV that comes out of the zipfile
-    csv_name = f"PUBLIC_DVD_{table.table}_{year}{padded_month}010000.CSV"
+    if (year, month) >= (2024, 8):
+        filename_base = f"PUBLIC_ARCHIVE%23{table.table}%23FILE01%23{year}{padded_month}010000"
+        url = f"{url_prefix}/{table.directory}/{filename_base}.zip"
+        csv_name = f"PUBLIC_ARCHIVE#{table.table}#FILE01#{year}{padded_month}010000.CSV"
+    else:
+        url = f"{url_prefix}/{table.directory}/PUBLIC_DVD_{table.table}_{year}{padded_month}010000.zip"
+        csv_name = f"PUBLIC_DVD_{table.table}_{year}{padded_month}010000.CSV"
 
     #  data directory where we will download data to
     data_directory = base_directory / table.name / f"{year}-{padded_month}"

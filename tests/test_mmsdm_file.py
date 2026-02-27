@@ -29,6 +29,34 @@ from nemdata import mmsdm
             "interconnectors",
             "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2010/MMSDM_2010_12/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_DVD_DISPATCHINTERCONNECTORRES_201012010000.zip",
         ),
+        (
+            2024,
+            7,
+            "DISPATCHPRICE",
+            "dispatch-price",
+            "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2024/MMSDM_2024_07/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_DVD_DISPATCHPRICE_202407010000.zip",
+        ),
+        (
+            2024,
+            8,
+            "DISPATCHPRICE",
+            "dispatch-price",
+            "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2024/MMSDM_2024_08/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_ARCHIVE%23DISPATCHPRICE%23FILE01%23202408010000.zip",
+        ),
+        (
+            2025,
+            1,
+            "DISPATCHPRICE",
+            "dispatch-price",
+            "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2025/MMSDM_2025_01/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_ARCHIVE%23DISPATCHPRICE%23FILE01%23202501010000.zip",
+        ),
+        (
+            2025,
+            5,
+            "TRADINGPRICE",
+            "trading-price",
+            "https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/2025/MMSDM_2025_05/MMSDM_Historical_Data_SQLLoader/DATA/PUBLIC_ARCHIVE%23TRADINGPRICE%23FILE01%23202505010000.zip",
+        ),
     ],
 )
 def test_form_report_url(
