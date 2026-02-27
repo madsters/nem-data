@@ -27,6 +27,7 @@ class MMSDMTable(pydantic.BaseModel):
     datetime_columns: typing.Union[list[str], None] = None
     interval_column: typing.Union[str, None] = None
     frequency: typing.Union[int, VariableFrequency, None] = None
+    legacy_table: typing.Union[str, None] = None
 
 
 mmsdm_tables = [
@@ -40,11 +41,12 @@ mmsdm_tables = [
     ),
     MMSDMTable(
         name="predispatch",
-        table="PREDISPATCHPRICE",
+        table="PREDISPATCHPRICE#ALL#FILE01",
         directory="PREDISP_ALL_DATA",
         datetime_columns=["LASTCHANGED", "DATETIME"],
         interval_column="DATETIME",
         frequency=30,
+        legacy_table="PREDISPATCHPRICE",
     ),
     MMSDMTable(
         name="unit-scada",
@@ -84,11 +86,12 @@ mmsdm_tables = [
     ),
     MMSDMTable(
         name="p5min",
-        table="P5MIN_REGIONSOLUTION_ALL",
+        table="P5MIN_REGIONSOLUTION_ALL#ALL#FILE01",
         directory="P5MIN_ALL_DATA",
         datetime_columns=["RUN_DATETIME", "INTERVAL_DATETIME", "LASTCHANGED"],
         interval_column="INTERVAL_DATETIME",
         frequency=5,
+        legacy_table="P5MIN_REGIONSOLUTION_ALL",
     ),
     MMSDMTable(
         name="predispatch-sensitivities",
@@ -100,11 +103,12 @@ mmsdm_tables = [
     ),
     MMSDMTable(
         name="predispatch-demand",
-        table="PREDISPATCHREGIONSUM",
+        table="PREDISPATCHREGIONSUM#ALL#FILE01",
         directory="PREDISP_ALL_DATA",
         datetime_columns=["LASTCHANGED", "DATETIME"],
         interval_column="DATETIME",
         frequency=30,
+        legacy_table="PREDISPATCHREGIONSUM",
     ),
 ]
 
@@ -154,20 +158,16 @@ def make_one_mmsdm_file(
 
     url_prefix = f"https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{year}/MMSDM_{year}_{padded_month}/MMSDM_Historical_Data_SQLLoader"
 
-    if (year, month) >= (2024, 8):
-        #  PREDISP_ALL_DATA and P5MIN_ALL_DATA have a different naming convention with #ALL before #FILE01
-        if table.directory.endswith("_ALL_DATA"):
-            filename_base = f"PUBLIC_ARCHIVE%23{table.table}%23ALL%23FILE01%23{year}{padded_month}010000"
-            csv_name = f"PUBLIC_ARCHIVE#{table.table}#ALL#FILE01#{year}{padded_month}010000.CSV"
-        else:
-            filename_base = f"PUBLIC_ARCHIVE%23{table.table}%23FILE01%23{year}{padded_month}010000"
-            csv_name = f"PUBLIC_ARCHIVE#{table.table}#FILE01#{year}{padded_month}010000.CSV"
-        url = f"{url_prefix}/{table.directory}/{filename_base}.zip"
-    else:
-        url = f"{url_prefix}/{table.directory}/PUBLIC_DVD_{table.table}_{year}{padded_month}010000.zip"
-        csv_name = f"PUBLIC_DVD_{table.table}_{year}{padded_month}010000.CSV"
+    legacy_table_name = table.legacy_table if table.legacy_table else table.table
 
-    #  data directory where we will download data to
+    if (year, month) >= (2024, 8):
+        url = f"{url_prefix}/{table.directory}/PUBLIC_ARCHIVE#{table.table}#{year}{padded_month}010000.zip"
+        url = url.replace("#", "%23")
+        csv_name = f"PUBLIC_ARCHIVE#{table.table}#{year}{padded_month}010000.CSV"
+    else:
+        url = f"{url_prefix}/{table.directory}/PUBLIC_DVD_{legacy_table_name}_{year}{padded_month}010000.zip"
+        csv_name = f"PUBLIC_DVD_{legacy_table_name}_{year}{padded_month}010000.CSV"
+
     data_directory = base_directory / table.name / f"{year}-{padded_month}"
     data_directory.mkdir(exist_ok=True, parents=True)
 
@@ -230,6 +230,24 @@ def download_mmsdm(
         return pd.DataFrame()
 
 
+def check_for_additional_files(mmsdm_file: MMSDMFile) -> None:
+    """Warn if there are additional files (FILE02, etc.) when FILE01 is in the URL."""
+    if "FILE01" not in mmsdm_file.url:
+        return
+
+    file02_url = mmsdm_file.url.replace("FILE01", "FILE02")
+    try:
+        response = requests.head(file02_url, timeout=10)
+        if response.status_code == 200:
+            warnings.warn(
+                f"Multiple files exist for {mmsdm_file.table.name} ({mmsdm_file.year}-{mmsdm_file.month:02d}). "
+                f"Only FILE01 is being downloaded. Additional files (FILE02, etc.) are not supported.",
+                UserWarning,
+            )
+    except requests.RequestException:
+        pass
+
+
 def download_one_mmsdm(
     table: MMSDMTable, mmsdm_file: MMSDMFile, dry_run: bool
 ) -> typing.Union[pd.DataFrame, None]:
@@ -239,6 +257,8 @@ def download_one_mmsdm(
         return pd.read_parquet(clean_fi)
     else:
         print(f" [blue]NOT CACHED[/] {' '.join(clean_fi.parts[-5:])}")
+
+    check_for_additional_files(mmsdm_file)
 
     data_available = utils.download_zipfile(mmsdm_file)
 
