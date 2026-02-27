@@ -155,9 +155,14 @@ def make_one_mmsdm_file(
     url_prefix = f"https://www.nemweb.com.au/Data_Archive/Wholesale_Electricity/MMSDM/{year}/MMSDM_{year}_{padded_month}/MMSDM_Historical_Data_SQLLoader"
 
     if (year, month) >= (2024, 8):
-        filename_base = f"PUBLIC_ARCHIVE%23{table.table}%23FILE01%23{year}{padded_month}010000"
+        #  PREDISP_ALL_DATA and P5MIN_ALL_DATA have a different naming convention with #ALL before #FILE01
+        if table.directory.endswith("_ALL_DATA"):
+            filename_base = f"PUBLIC_ARCHIVE%23{table.table}%23ALL%23FILE01%23{year}{padded_month}010000"
+            csv_name = f"PUBLIC_ARCHIVE#{table.table}#ALL#FILE01#{year}{padded_month}010000.CSV"
+        else:
+            filename_base = f"PUBLIC_ARCHIVE%23{table.table}%23FILE01%23{year}{padded_month}010000"
+            csv_name = f"PUBLIC_ARCHIVE#{table.table}#FILE01#{year}{padded_month}010000.CSV"
         url = f"{url_prefix}/{table.directory}/{filename_base}.zip"
-        csv_name = f"PUBLIC_ARCHIVE#{table.table}#FILE01#{year}{padded_month}010000.CSV"
     else:
         url = f"{url_prefix}/{table.directory}/PUBLIC_DVD_{table.table}_{year}{padded_month}010000.zip"
         csv_name = f"PUBLIC_DVD_{table.table}_{year}{padded_month}010000.CSV"
